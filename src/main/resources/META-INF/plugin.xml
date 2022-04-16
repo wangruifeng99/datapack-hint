@@ -1,18 +1,22 @@
-<!-- Plugin Configuration File. Read more: https://plugins.jetbrains.com/docs/intellij/plugin-configuration-file.html -->
 <idea-plugin>
     <id>com.github.wangruifeng99.datapackhint</id>
-    <name>datapack-hint</name>
+    <name>DataPackHint</name>
     <vendor>wangruifeng99</vendor>
 
     <depends>com.intellij.modules.platform</depends>
-
+    <depends>com.intellij.modules.java</depends>
+    <depends>com.intellij.modules.lang</depends>
     <extensions defaultExtensionNs="com.intellij">
-        <applicationService serviceImplementation="com.github.wangruifeng99.datapackhint.services.MyApplicationService"/>
-        <projectService serviceImplementation="com.github.wangruifeng99.datapackhint.services.MyProjectService"/>
+        <localInspection language="JAVA"
+                         displayName="SDK: '==' or '!=' used instead of 'equals()'"
+                         groupPath="Java"
+                         groupBundle="messages.InspectionsBundle"
+                         groupKey="group.names.probable.bugs"
+                         enabledByDefault="true"
+                         level="ERROR"
+                         implementationClass="com.plugins.datapack.DataPackInspection"/>
     </extensions>
 
     <applicationListeners>
-        <listener class="com.github.wangruifeng99.datapackhint.listeners.MyProjectManagerListener"
-                  topic="com.intellij.openapi.project.ProjectManagerListener"/>
     </applicationListeners>
 </idea-plugin>
