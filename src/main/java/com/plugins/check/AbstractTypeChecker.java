@@ -1,12 +1,17 @@
 package com.plugins.check;
 
+import com.plugins.util.FieldTypeUtils;
+
 public abstract class AbstractTypeChecker {
     protected String type;
 
     /**
-     * 校验类型是否匹配
+     * 鏍￠獙绫诲瀷鏄惁鍖归厤
      */
     public boolean valid(String targetType) {
+        if(!FieldTypeUtils.finished) {
+            return true;
+        }
         return type.equalsIgnoreCase(targetType);
     }
 

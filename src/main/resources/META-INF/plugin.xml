@@ -1,22 +1,45 @@
 <idea-plugin>
-    <id>com.github.wangruifeng99.datapackhint</id>
+    <id>com.cicc.plugins</id>
     <name>DataPackHint</name>
-    <vendor>wangruifeng99</vendor>
+    <version>1.0</version>
+    <vendor email="598778567@qq.com" url="">Cicc</vendor>
 
+    <description><![CDATA[
+      校验DataPack是否被合理使用，并支持自动更正<br>
+      <em>
+        1、校验set...Value方法调用是否正确<br>
+        2、校验get...Value方法调用是否正确<br>
+        3、校验参数类型与方法调用是否匹配<br>
+        例：dataPack.getDoubleValue((double)1, "acctId");<br>
+        校验不通过，并提示应该调用dataPack.getStringValue<br>
+      </em>
+    ]]></description>
+
+    <change-notes><![CDATA[
+      支持校验字段是否存在及字段类型是否正确<br>
+    ]]>
+    </change-notes>
+
+
+    <!-- please see https://www.jetbrains.org/intellij/sdk/docs/basics/getting_started/plugin_compatibility.html
+         on how to target different products -->
     <depends>com.intellij.modules.platform</depends>
     <depends>com.intellij.modules.java</depends>
     <depends>com.intellij.modules.lang</depends>
+
     <extensions defaultExtensionNs="com.intellij">
         <localInspection language="JAVA"
-                         displayName="SDK: '==' or '!=' used instead of 'equals()'"
+                         displayName="WrongType"
                          groupPath="Java"
                          groupBundle="messages.InspectionsBundle"
                          groupKey="group.names.probable.bugs"
                          enabledByDefault="true"
                          level="ERROR"
-                         implementationClass="com.plugins.datapack.DataPackInspection"/>
+                         implementationClass="com.plugins.inspaction.DataPackInspection"/>
     </extensions>
 
-    <applicationListeners>
-    </applicationListeners>
+    <actions>
+        <!-- Add your actions here -->
+    </actions>
+
 </idea-plugin>

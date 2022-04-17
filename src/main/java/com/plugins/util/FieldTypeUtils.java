@@ -12,11 +12,17 @@ import java.util.Map;
 public class FieldTypeUtils {
 
     private static final Map<String, DataPackField> typeDic = new HashMap<>();
+    private static final Map<String, String> aliasDic;
+    public static boolean finished;
 
     static {
+        aliasDic = new HashMap<>();
+        aliasDic.put("date", "String");
         try {
             readFile();
+            finished = true;
         } catch (IOException e) {
+            finished = false;
             e.printStackTrace();
         }
     }
@@ -27,6 +33,11 @@ public class FieldTypeUtils {
         }
         DataPackField field = typeDic.get(fieldName.toLowerCase());
         if(field != null) {
+            String fieldType = field.getType();
+            String realType = aliasDic.get(fieldType);
+            if(realType != null) {
+                return realType;
+            }
             return field.getType();
         }
         return null;
@@ -48,11 +59,16 @@ public class FieldTypeUtils {
                 String fieldName = infos[1];
                 String fieldType = infos[2];
                 String len = infos[3];
+                String additionalType;
                 if("double".equalsIgnoreCase(fieldType) && !len.contains(",")) {
                     fieldType = "long";
+                    additionalType = "double";
+                } else {
+                    additionalType = aliasDic.get(fieldType);
                 }
                 field.setName(fieldName);
                 field.setType(fieldType);
+                field.setAdditionalType(additionalType);
                 typeDic.put(fieldName.toLowerCase(), field);
             }
         }

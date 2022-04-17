@@ -4,6 +4,7 @@ public class DataPackField {
     private String id;
     private String name;
     private String type;
+    private String additionalType;
     private int length;
     private String description;
 
@@ -21,6 +22,14 @@ public class DataPackField {
 
     public void setName(String name) {
         this.name = name;
+    }
+
+    public String getAdditionalType() {
+        return additionalType;
+    }
+
+    public void setAdditionalType(String additionalType) {
+        this.additionalType = additionalType;
     }
 
     public String getType() {

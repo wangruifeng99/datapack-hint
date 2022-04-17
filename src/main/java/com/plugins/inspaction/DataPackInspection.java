@@ -1,4 +1,4 @@
-package com.plugins.datapack;
+package com.plugins.inspaction;
 
 import com.intellij.codeInspection.AbstractBaseJavaLocalInspectionTool;
 import com.intellij.codeInspection.LocalQuickFix;
@@ -15,6 +15,7 @@ import com.plugins.util.FieldTypeUtils;
 import org.jetbrains.annotations.NotNull;
 
 public class DataPackInspection extends AbstractBaseJavaLocalInspectionTool {
+
     private static final Logger LOG = Logger.getInstance("#com.plugins.datapack.DataPackInspection");
 
     @Override
@@ -28,11 +29,20 @@ public class DataPackInspection extends AbstractBaseJavaLocalInspectionTool {
 
             @Override
             public void visitFile(@NotNull PsiFile file) {
-
             }
 
             @Override
             public void visitMethodCallExpression(PsiMethodCallExpression expression) {
+                // å‘ç”Ÿå¼‚å¸¸åä¸å½±å“æ’ä»¶æ­£å¸¸è¿è¡Œ
+                try {
+                    validate(expression);
+                } catch (Throwable e) {
+                    e.printStackTrace();
+                }
+
+            }
+
+            private void validate(PsiMethodCallExpression expression) {
                 PsiReferenceExpression methodExpression = expression.getMethodExpression();
                 PsiExpression qualifierExpression = methodExpression.getQualifierExpression();
                 if(qualifierExpression == null) {
@@ -42,18 +52,28 @@ public class DataPackInspection extends AbstractBaseJavaLocalInspectionTool {
                 if(type == null) {
                     return;
                 }
+                // å­—æ®µåï¼Œå¦‚dataPack
+                String objFieldName = qualifierExpression.getText();
+                if(objFieldName == null) {
+                    return;
+                }
+                // ç±»å‹
                 String canonicalText = type.getCanonicalText();
                 if(!"com.stock.framework.communication.DataPack".equals(canonicalText)) {
                     return;
                 }
-                // ·½·¨Ãû Èç£ºgetStringValue
+                // æ–¹æ³•å å¦‚ï¼šgetStringValue
                 String methodName = methodExpression.getReferenceName();
                 if(methodName == null) {
                     return;
                 }
-                // ËùÓĞ²ÎÊı
+                // å¦‚æœä¸æ˜¯set...Valueæˆ–get...Valueï¼Œä¸æ ¡éªŒ
+                if(!methodName.endsWith("Value")) {
+                    return;
+                }
+                // æ‰€æœ‰å‚æ•°
                 PsiExpression[] expressions = expression.getArgumentList().getExpressions();
-                // ĞèÒªĞ£ÑéµÄÈë²Î×Ö¶ÎÔÚµÚ2¸ö
+                // éœ€è¦æ ¡éªŒçš„å…¥å‚å­—æ®µåœ¨ç¬¬2ä¸ª
                 if(expressions.length < 2) {
                     return;
                 }
@@ -81,12 +101,12 @@ public class DataPackInspection extends AbstractBaseJavaLocalInspectionTool {
                 boolean valid = checker.valid(fieldType);
 
                 if(fieldType == null) {
-                    holder.registerProblem(expression,   "Î´ÕÒµ½" + fieldName);
+                    holder.registerProblem(expression, "Field " + fieldName + " is not defined in dict.txt");
                     return;
                 }
                 if(!valid) {
-                    CriQuickFix myQuickFix = new CriQuickFix("Change to " + realType, realType);
-                    holder.registerProblem(expression, fieldName + "ÀàĞÍÎª" + fieldType, myQuickFix);
+                    CriQuickFix myQuickFix = new CriQuickFix("Change to " + realType, objFieldName, realType);
+                    holder.registerProblem(expression, "Should be " + objFieldName + "." + realType, myQuickFix);
                 }
             }
 
@@ -95,9 +115,11 @@ public class DataPackInspection extends AbstractBaseJavaLocalInspectionTool {
 
     private static class CriQuickFix implements LocalQuickFix {
         private final String name;
+        private final String fieldName;
         private final String realMethodName;
-        public CriQuickFix(String name, String methodName) {
+        public CriQuickFix(String name, String fieldName, String methodName) {
             this.name = name;
+            this.fieldName = fieldName;
             this.realMethodName = methodName;
         }
 
@@ -110,10 +132,15 @@ public class DataPackInspection extends AbstractBaseJavaLocalInspectionTool {
         @Override
         public void applyFix(@NotNull Project project, @NotNull ProblemDescriptor descriptor) {
             try {
+                PsiElement element = descriptor.getPsiElement();
+                if(!(element instanceof PsiMethodCallExpressionImpl)) {
+                    return;
+                }
                 PsiMethodCallExpression expression = (PsiMethodCallExpressionImpl) descriptor.getPsiElement();
                 PsiElementFactory factory = JavaPsiFacade.getInstance(project).getElementFactory();
-                PsiExpression newMethod = factory.createExpressionFromText(this.realMethodName, null);
-                expression.getMethodExpression().getLastChild().replace(newMethod);
+                PsiExpression newExpression = factory.createExpressionFromText(fieldName + "." + this.realMethodName, null);
+                expression.getMethodExpression().replace(newExpression);
+
             } catch (IncorrectOperationException e) {
                 e.printStackTrace();
                 LOG.error(e);
